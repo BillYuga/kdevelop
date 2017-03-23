@@ -25,7 +25,7 @@
 #include "dbgglobal.h"
 #include "debuglog.h"
 
-#include <util/environmentgrouplist.h>
+#include <util/environmentprofilelist.h>
 
 #include <KConfigGroup>
 #include <KLocalizedString>
@@ -51,9 +51,9 @@ bool LldbDebugger::start(KConfigGroup& config, const QStringList& extraArguments
     // Get path to executable
     QUrl lldbUrl = config.readEntry(Config::LldbExecutableEntry, QUrl());
     if (!lldbUrl.isValid() || !lldbUrl.isLocalFile()) {
-        debuggerBinary_ = "lldb-mi";
+        debuggerExecutable_ = QStringLiteral("lldb-mi");
     } else {
-        debuggerBinary_ = lldbUrl.toLocalFile();
+        debuggerExecutable_ = lldbUrl.toLocalFile();
     }
 
     // Get arguments
@@ -62,8 +62,8 @@ bool LldbDebugger::start(KConfigGroup& config, const QStringList& extraArguments
     arguments.append(KShell::splitArgs(config.readEntry(Config::LldbArgumentsEntry, QString())));
 
     // Get environment
-    const EnvironmentGroupList egl(config.config());
-    const auto &envs = egl.variables(config.readEntry(Config::LldbEnvironmentEntry, egl.defaultGroup()));
+    const EnvironmentProfileList egl(config.config());
+    const auto &envs = egl.variables(config.readEntry(Config::LldbEnvironmentEntry, egl.defaultProfileName()));
     QProcessEnvironment processEnv;
     if (config.readEntry(Config::LldbInheritSystemEnvEntry, true)) {
         processEnv = QProcessEnvironment::systemEnvironment();
@@ -74,12 +74,12 @@ bool LldbDebugger::start(KConfigGroup& config, const QStringList& extraArguments
 
     // Start!
     process_->setProcessEnvironment(processEnv);
-    process_->setProgram(debuggerBinary_, arguments);
+    process_->setProgram(debuggerExecutable_, arguments);
     process_->start();
 
-    qCDebug(DEBUGGERLLDB) << "Starting LLDB with command" << debuggerBinary_ + ' ' + arguments.join(' ');
+    qCDebug(DEBUGGERLLDB) << "Starting LLDB with command" << debuggerExecutable_ + QLatin1Char(' ') + arguments.join(QLatin1Char(' '));
     qCDebug(DEBUGGERLLDB) << "LLDB process pid:" << process_->pid();
-    emit userCommandOutput(debuggerBinary_ + ' ' + arguments.join(' ') + '\n');
+    emit userCommandOutput(debuggerExecutable_ + QLatin1Char(' ') + arguments.join(QLatin1Char(' ')) + QLatin1Char('\n'));
 
     return true;
 }

@@ -26,16 +26,12 @@
 #include <QTemporaryDir>
 #include <QRegularExpression>
 
-#include <kconfig.h>
 #include <KLocalizedString>
 #include <kconfiggroup.h>
-#include <kparts/mainwindow.h>
 
 #include <project/projectmodel.h>
 #include <interfaces/iproject.h>
 #include <interfaces/icore.h>
-#include <interfaces/iuicontroller.h>
-#include <interfaces/idocumentationcontroller.h>
 #include <interfaces/iplugincontroller.h>
 #include <QStandardPaths>
 
@@ -43,7 +39,10 @@
 #include "cmakebuilddirchooser.h"
 #include "settings/cmakecachemodel.h"
 #include "debug.h"
+#include "cmakebuilderconfig.h"
 #include <cmakecachereader.h>
+
+using namespace KDevelop;
 
 namespace Config
 {
@@ -66,7 +65,8 @@ static const QString buildDirCountKey = "Build Directory Count";
 namespace Specific
 {
 static const QString buildDirPathKey = "Build Directory Path";
-static const QString cmakeBinKey = "CMake Binary";
+// TODO: migrate to more generic & consistent key term "CMake Executable"
+static const QString cmakeExecutableKey = "CMake Binary";
 static const QString cmakeBuildTypeKey = "Build Type";
 static const QString cmakeInstallDirKey = "Install Directory";
 static const QString cmakeEnvironmentKey = "Environment Profile";
@@ -193,7 +193,7 @@ bool checkForNeedingConfigure( KDevelop::IProject* project )
 
         bd.setSourceFolder( folder );
         bd.setAlreadyUsed( CMake::allBuildDirs(project) );
-        bd.setCMakeBinary( currentCMakeBinary(project) );
+        bd.setCMakeExecutable(currentCMakeExecutable(project));
 
         if( !bd.exec() )
         {
@@ -210,7 +210,7 @@ bool checkForNeedingConfigure( KDevelop::IProject* project )
         qCDebug(CMAKE) << "adding to cmake config: installdir " << bd.installPrefix();
         qCDebug(CMAKE) << "adding to cmake config: extra args" << bd.extraArguments();
         qCDebug(CMAKE) << "adding to cmake config: build type " << bd.buildType();
-        qCDebug(CMAKE) << "adding to cmake config: cmake binary " << bd.cmakeBinary();
+        qCDebug(CMAKE) << "adding to cmake config: cmake executable " << bd.cmakeExecutable();
         qCDebug(CMAKE) << "adding to cmake config: environment <null>";
         CMake::setBuildDirCount( project, addedBuildDirIndex + 1 );
         CMake::setCurrentBuildDirIndex( project, addedBuildDirIndex );
@@ -218,7 +218,7 @@ bool checkForNeedingConfigure( KDevelop::IProject* project )
         CMake::setCurrentInstallDir( project, bd.installPrefix() );
         CMake::setCurrentExtraArguments( project, bd.extraArguments() );
         CMake::setCurrentBuildType( project, bd.buildType() );
-        CMake::setCurrentCMakeBinary( project, bd.cmakeBinary() );
+        CMake::setCurrentCMakeExecutable(project, bd.cmakeExecutable());
         CMake::setCurrentEnvironment( project, QString() );
 
         return true;
@@ -308,14 +308,14 @@ QString findExecutable()
     return cmake;
 }
 
-KDevelop::Path currentCMakeBinary( KDevelop::IProject* project )
+KDevelop::Path currentCMakeExecutable(KDevelop::IProject* project)
 {
-    const auto systemBinary = findExecutable();
-    auto path = readProjectParameter( project, Config::Specific::cmakeBinKey, systemBinary );
-    if (path != systemBinary) {
+    const auto systemExecutable = findExecutable();
+    auto path = readProjectParameter(project, Config::Specific::cmakeExecutableKey, systemExecutable);
+    if (path != systemExecutable) {
         QFileInfo info(path);
         if (!info.isExecutable()) {
-            path = systemBinary;
+            path = systemExecutable;
         }
     }
     return KDevelop::Path(path);
@@ -351,9 +351,9 @@ void setCurrentBuildType( KDevelop::IProject* project, const QString& type )
     writeProjectParameter( project, Config::Specific::cmakeBuildTypeKey, type );
 }
 
-void setCurrentCMakeBinary( KDevelop::IProject* project, const KDevelop::Path& path )
+void setCurrentCMakeExecutable(KDevelop::IProject* project, const KDevelop::Path& path)
 {
-    writeProjectParameter( project, Config::Specific::cmakeBinKey, path.toLocalFile() );
+    writeProjectParameter(project, Config::Specific::cmakeExecutableKey, path.toLocalFile());
 }
 
 void setCurrentBuildDir( KDevelop::IProject* project, const KDevelop::Path& path )
@@ -444,6 +444,35 @@ void removeBuildDirConfig( KDevelop::IProject* project )
     }
 }
 
+QHash<QString, QString> readCacheValues(const KDevelop::Path& cmakeCachePath, QSet<QString> variables)
+{
+    QHash<QString, QString> ret;
+    QFile file(cmakeCachePath.toLocalFile());
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qCWarning(CMAKE) << "couldn't open CMakeCache.txt" << cmakeCachePath;
+        return ret;
+    }
+
+    QTextStream in(&file);
+    while (!in.atEnd() && !variables.isEmpty())
+    {
+        QString line = in.readLine().trimmed();
+        if(!line.isEmpty() && line[0].isLetter())
+        {
+            CacheLine c;
+            c.readLine(line);
+
+            if(!c.isCorrect())
+                continue;
+
+            if (variables.remove(c.name())) {
+                ret[c.name()] = c.value();
+            }
+        }
+    }
+    return ret;
+}
+
 void updateConfig( KDevelop::IProject* project, int buildDirIndex)
 {
     if (buildDirIndex < 0)
@@ -452,33 +481,19 @@ void updateConfig( KDevelop::IProject* project, int buildDirIndex)
     KConfigGroup buildDirGrp = buildDirGroup( project, buildDirIndex );
     const KDevelop::Path builddir(buildDirGrp.readEntry( Config::Specific::buildDirPathKey, QString() ));
     const KDevelop::Path cacheFilePath( builddir, QStringLiteral("CMakeCache.txt"));
-    QFile file(cacheFilePath.toLocalFile());
-    const QMap<QString, QString> keys = {
-        { Config::Specific::cmakeBinKey, QStringLiteral("CMAKE_COMMAND") },
-        { Config::Specific::cmakeInstallDirKey, QStringLiteral("CMAKE_INSTALL_PREFIX") },
-        { Config::Specific::cmakeBuildTypeKey, QStringLiteral("CMAKE_BUILD_TYPE") }
-    };
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        QTextStream in(&file);
-        while (!in.atEnd())
-        {
-            QString line = in.readLine().trimmed();
-            if(!line.isEmpty() && !line[0].isLetterOrNumber())
-            {
-                CacheLine c;
-                c.readLine(line);
 
-                if(c.isCorrect()) {
-                    QString key = keys.value(c.name());
-                    if (!key.isEmpty()) {
-                        buildDirGrp.writeEntry( key, c.value() );
-                    }
-                }
-            }
-        }
-    } else
-        qCWarning(CMAKE) << "error. Could not find the file" << cacheFilePath;
+    const QMap<QString, QString> keys = {
+        { QStringLiteral("CMAKE_COMMAND"), Config::Specific::cmakeExecutableKey },
+        { QStringLiteral("CMAKE_INSTALL_PREFIX"), Config::Specific::cmakeInstallDirKey },
+        { QStringLiteral("CMAKE_BUILD_TYPE"), Config::Specific::cmakeBuildTypeKey }
+    };
+
+    const QHash<QString, QString> cacheValues = readCacheValues(cacheFilePath, keys.keys().toSet());
+    for(auto it = cacheValues.constBegin(), itEnd = cacheValues.constEnd(); it!=itEnd; ++it) {
+        const QString key = keys.value(it.key());
+        Q_ASSERT(!key.isEmpty());
+        buildDirGrp.writeEntry( key, it.value() );
+    }
 }
 
 void attemptMigrate( KDevelop::IProject* project )
@@ -583,6 +598,39 @@ QString executeProcess(const QString& execName, const QStringList& args)
     QString t;
     t.prepend(b.trimmed());
     return t;
+}
+
+QStringList supportedGenerators()
+{
+    QStringList generatorNames;
+
+    bool hasNinja = ICore::self() && ICore::self()->pluginController()->pluginForExtension("org.kdevelop.IProjectBuilder", "KDevNinjaBuilder");
+    if (hasNinja)
+        generatorNames << "Ninja";
+
+#ifdef Q_OS_WIN
+    // Visual Studio solution is the standard generator under windows, but we don't want to use
+    // the VS IDE, so we need nmake makefiles
+    generatorNames << "NMake Makefiles";
+#endif
+    generatorNames << "Unix Makefiles";
+
+    return generatorNames;
+}
+
+QString defaultGenerator()
+{
+    const QStringList generatorNames = supportedGenerators();
+
+    QString defGen = generatorNames.value(CMakeBuilderSettings::self()->generator());
+    if (defGen.isEmpty())
+    {
+        qWarning() << "Couldn't find builder with index " << CMakeBuilderSettings::self()->generator()
+                   << ", defaulting to 0";
+        CMakeBuilderSettings::self()->setGenerator(0);
+        defGen = generatorNames.at(0);
+    }
+    return defGen;
 }
 
 }

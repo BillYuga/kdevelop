@@ -36,8 +36,6 @@
 #include "mi/micommandqueue.h"
 #include "stty.h"
 
-#include <debugger/breakpoint/breakpointmodel.h>
-#include <debugger/interfaces/ivariablecontroller.h>
 #include <debugger/interfaces/iframestackmodel.h>
 #include <execute/iexecuteplugin.h>
 #include <interfaces/icore.h>
@@ -58,6 +56,7 @@
 #include <QPointer>
 #include <QRegularExpression>
 #include <QUrl>
+#include <QTimer>
 
 using namespace KDevelop;
 using namespace KDevMI;

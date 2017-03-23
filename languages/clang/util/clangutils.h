@@ -30,14 +30,10 @@
 
 #include "clangprivateexport.h"
 
-namespace KDevelop {
-    class IndexedString;
-}
-
 namespace ClangUtils
 {
     /**
-     * Finds the most specific CXCursor which applies to the the specified line and column
+     * Finds the most specific CXCursor which applies to the specified line and column
      * in the given translation unit and file.
      *
      * @param line The 0-indexed line number at which to search.

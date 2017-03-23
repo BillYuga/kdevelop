@@ -20,11 +20,6 @@
 
 #include "ninjabuilderpreferences.h"
 
-#include <kpluginfactory.h>
-#include <kpluginloader.h>
-#include <util/environmentgrouplist.h>
-#include <KAboutData>
-
 #include "ui_ninjaconfig.h"
 #include "ninjabuilderconfig.h"
 
@@ -41,7 +36,7 @@ NinjaBuilderPreferences::NinjaBuilderPreferences(IPlugin* plugin,
     connect(m_prefsUi->configureEnvironment, &EnvironmentConfigureButton::environmentConfigured,
             this, &NinjaBuilderPreferences::changed);
 
-    m_prefsUi->configureEnvironment->setSelectionWidget( m_prefsUi->kcfg_environmentProfile );
+    m_prefsUi->configureEnvironment->setSelectionWidget(m_prefsUi->kcfg_environmentProfile);
 }
 
 NinjaBuilderPreferences::~NinjaBuilderPreferences()

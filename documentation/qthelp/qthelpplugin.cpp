@@ -21,7 +21,6 @@
 #include "qthelpplugin.h"
 
 #include <kpluginfactory.h>
-#include <KAboutData>
 #include <interfaces/icore.h>
 #include <interfaces/idocumentationcontroller.h>
 #include <QDirIterator>
@@ -94,7 +93,7 @@ void QtHelpPlugin::searchHelpDirectory(QStringList& pathList, QStringList& nameL
 }
 
 
-void QtHelpPlugin::loadQtHelpProvider(QStringList pathList, QStringList nameList, QStringList iconList)
+void QtHelpPlugin::loadQtHelpProvider(const QStringList& pathList, const QStringList& nameList, const QStringList& iconList)
 {
     QList<QtHelpProvider*> oldList(m_qtHelpProviders);
     m_qtHelpProviders.clear();

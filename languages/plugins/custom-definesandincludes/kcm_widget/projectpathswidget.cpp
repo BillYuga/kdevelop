@@ -24,11 +24,8 @@
 #include <QFileDialog>
 #include <QRegExp>
 
-#include <util/environmentgrouplist.h>
 #include <interfaces/iproject.h>
 #include <KLocalizedString>
-#include <interfaces/icore.h>
-#include <interfaces/iplugincontroller.h>
 
 #include "../compilerprovider/compilerprovider.h"
 #include "../compilerprovider/settingsmanager.h"
@@ -85,12 +82,12 @@ ProjectPathsWidget::ProjectPathsWidget( QWidget* parent )
     tabChanged(IncludesPage);
 }
 
-QList<ConfigEntry> ProjectPathsWidget::paths() const
+QVector<ConfigEntry> ProjectPathsWidget::paths() const
 {
     return pathsModel->paths();
 }
 
-void ProjectPathsWidget::setPaths( const QList<ConfigEntry>& paths )
+void ProjectPathsWidget::setPaths( const QVector<ConfigEntry>& paths )
 {
     bool b = blockSignals( true );
     clear();
@@ -167,7 +164,7 @@ void ProjectPathsWidget::projectPathSelected( int index )
 void ProjectPathsWidget::clear()
 {
     bool sigDisabled = ui->projectPaths->blockSignals( true );
-    pathsModel->setPaths( QList<ConfigEntry>() );
+    pathsModel->setPaths({});
     ui->includesWidget->clear();
     ui->definesWidget->clear();
     updateEnablements();
@@ -177,7 +174,7 @@ void ProjectPathsWidget::clear()
 void ProjectPathsWidget::addProjectPath()
 {
     const QUrl directory = pathsModel->data(pathsModel->index(0, 0), ProjectPathsModel::FullUrlDataRole).value<QUrl>();
-    QFileDialog dlg(this, tr("Select Project Path"), directory.toLocalFile());
+    QFileDialog dlg(this, i18n("Select Project Path"), directory.toLocalFile());
     dlg.setFileMode(QFileDialog::Directory);
     dlg.setOption(QFileDialog::ShowDirsOnly);
     dlg.exec();

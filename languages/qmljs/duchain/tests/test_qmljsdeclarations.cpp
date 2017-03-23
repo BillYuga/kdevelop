@@ -34,8 +34,9 @@
 #include <language/duchain/types/integraltype.h>
 #include <language/duchain/problem.h>
 #include <language/duchain/classdeclaration.h>
+#include <language/editor/documentrange.h>
 
-#include <QtTest>
+#include <QTest>
 
 QTEST_GUILESS_MAIN(TestDeclarations);
 

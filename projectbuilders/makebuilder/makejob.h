@@ -27,14 +27,11 @@
 #include <outputview/outputexecutejob.h>
 
 #include <QString>
-#include <QProcess>
 
 #include "imakebuilder.h"
 
 namespace KDevelop {
-class OutputModel;
 class ProjectBaseItem;
-class ProcessLineMaker;
 }
 
 class QUrl;
@@ -68,7 +65,7 @@ public:
     void start() override;
 
     KDevelop::ProjectBaseItem* item() const;
-    CommandType commandType();
+    CommandType commandType() const;
     QStringList customTargets() const;
 
 

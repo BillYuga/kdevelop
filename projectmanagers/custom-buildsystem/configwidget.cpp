@@ -19,15 +19,11 @@
 
 #include "configwidget.h"
 
-#include <QToolButton>
-#include <QLayout>
-
 #include <KLocalizedString>
 #include <KLineEdit>
 #include <QAction>
 
 #include "ui_configwidget.h"
-#include <util/environmentgrouplist.h>
 #include <interfaces/iproject.h>
 
 using namespace KDevelop;

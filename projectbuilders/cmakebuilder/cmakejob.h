@@ -23,15 +23,12 @@
 #define CMAKEJOB_H
 
 #include <outputview/outputexecutejob.h>
-#include <QProcess>
-#include <QString>
 
 #include <util/path.h>
 
 namespace KDevelop {
 class IProject;
 class ProjectBaseItem;
-class CommandExecutor;
 }
 
 class CMakeJob: public KDevelop::OutputExecuteJob

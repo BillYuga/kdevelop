@@ -29,7 +29,6 @@
 #include <debugger/breakpoint/breakpoint.h>
 #include <debugger/breakpoint/breakpointmodel.h>
 #include <debugger/framestack/framestackmodel.h>
-#include <debugger/interfaces/ibreakpointcontroller.h>
 #include <debugger/interfaces/ivariablecontroller.h>
 #include <debugger/variable/variablecollection.h>
 #include <interfaces/idebugcontroller.h>
@@ -38,7 +37,7 @@
 #include <tests/autotestshell.h>
 #include <tests/testcore.h>
 #include <shell/shellextension.h>
-#include <util/environmentgrouplist.h>
+#include <util/environmentprofilelist.h>
 
 #include <KIO/Global>
 #include <KProcess>
@@ -127,14 +126,14 @@ void GdbTest::init()
     vc->watches()->clear();
 }
 
-class WritableEnvironmentGroupList : public KDevelop::EnvironmentGroupList
+class WritableEnvironmentProfileList : public KDevelop::EnvironmentProfileList
 {
 public:
-    explicit WritableEnvironmentGroupList(KConfig* config) : EnvironmentGroupList(config) {}
+    explicit WritableEnvironmentProfileList(KConfig* config) : EnvironmentProfileList(config) {}
 
-    using EnvironmentGroupList::variables;
-    using EnvironmentGroupList::saveSettings;
-    using EnvironmentGroupList::removeGroup;
+    using EnvironmentProfileList::variables;
+    using EnvironmentProfileList::saveSettings;
+    using EnvironmentProfileList::removeProfile;
 };
 
 class TestLaunchConfiguration : public KDevelop::ILaunchConfiguration
@@ -270,7 +269,7 @@ private:
 #define COMPARE_DATA(index, expected) \
     do { if(!compareData((index), (expected), __FILE__, __LINE__)) return; } while (0)
 
-bool compareData(QModelIndex index, QString expected, const char *file, int line)
+bool compareData(QModelIndex index, const QString& expected, const char *file, int line)
 {
     QString s = index.model()->data(index, Qt::DisplayRole).toString();
     if (s != expected) {
@@ -314,12 +313,12 @@ void GdbTest::testEnvironmentSet()
 
     cfg.config().writeEntry("EnvironmentGroup", "GdbTestGroup");
 
-    WritableEnvironmentGroupList envGroups(cfg.rootConfig());
-    envGroups.removeGroup("GdbTestGroup");
-    auto &envs = envGroups.variables("GdbTestGroup");
+    WritableEnvironmentProfileList envProfiles(cfg.rootConfig());
+    envProfiles.removeProfile("GdbTestGroup");
+    auto &envs = envProfiles.variables("GdbTestGroup");
     envs["VariableA"] = "-A' \" complex --value";
     envs["VariableB"] = "-B' \" complex --value";
-    envGroups.saveSettings(cfg.rootConfig());
+    envProfiles.saveSettings(cfg.rootConfig());
 
     QSignalSpy outputSpy(session, &TestDebugSession::inferiorStdoutLines);
 
@@ -839,21 +838,21 @@ void GdbTest::testStack()
 
     QCOMPARE(stackModel->rowCount(tIdx), 2);
     QCOMPARE(stackModel->columnCount(tIdx), 3);
-    COMPARE_DATA(tIdx.child(0, 0), "0");
-    COMPARE_DATA(tIdx.child(0, 1), "foo");
-    COMPARE_DATA(tIdx.child(0, 2), debugeeFileName+":23");
-    COMPARE_DATA(tIdx.child(1, 0), "1");
-    COMPARE_DATA(tIdx.child(1, 1), "main");
-    COMPARE_DATA(tIdx.child(1, 2), debugeeFileName+":29");
+    COMPARE_DATA(stackModel->index(0, 0, tIdx), "0");
+    COMPARE_DATA(stackModel->index(0, 1, tIdx), "foo");
+    COMPARE_DATA(stackModel->index(0, 2, tIdx), debugeeFileName+":23");
+    COMPARE_DATA(stackModel->index(1, 0, tIdx), "1");
+    COMPARE_DATA(stackModel->index(1, 1, tIdx), "main");
+    COMPARE_DATA(stackModel->index(1, 2, tIdx), debugeeFileName+":29");
 
 
     session->stepOut();
     WAIT_FOR_STATE(session, DebugSession::PausedState);
     COMPARE_DATA(tIdx, "#1 at main");
     QCOMPARE(stackModel->rowCount(tIdx), 1);
-    COMPARE_DATA(tIdx.child(0, 0), "0");
-    COMPARE_DATA(tIdx.child(0, 1), "main");
-    COMPARE_DATA(tIdx.child(0, 2), debugeeFileName+":30");
+    COMPARE_DATA(stackModel->index(0, 0, tIdx), "0");
+    COMPARE_DATA(stackModel->index(0, 1, tIdx), "main");
+    COMPARE_DATA(stackModel->index(0, 2, tIdx), debugeeFileName+":30");
 
     session->run();
     WAIT_FOR_STATE(session, DebugSession::PausedState);
@@ -880,48 +879,48 @@ void GdbTest::testStackFetchMore()
     COMPARE_DATA(tIdx, "#1 at foo");
 
     QCOMPARE(stackModel->rowCount(tIdx), 21);
-    COMPARE_DATA(tIdx.child(0, 0), "0");
-    COMPARE_DATA(tIdx.child(0, 1), "foo");
-    COMPARE_DATA(tIdx.child(0, 2), fileName+":26");
-    COMPARE_DATA(tIdx.child(1, 0), "1");
-    COMPARE_DATA(tIdx.child(1, 1), "foo");
-    COMPARE_DATA(tIdx.child(1, 2), fileName+":24");
-    COMPARE_DATA(tIdx.child(2, 0), "2");
-    COMPARE_DATA(tIdx.child(2, 1), "foo");
-    COMPARE_DATA(tIdx.child(2, 2), fileName+":24");
-    COMPARE_DATA(tIdx.child(19, 0), "19");
-    COMPARE_DATA(tIdx.child(20, 0), "20");
+    COMPARE_DATA(stackModel->index(0, 0, tIdx), "0");
+    COMPARE_DATA(stackModel->index(0, 1, tIdx), "foo");
+    COMPARE_DATA(stackModel->index(0, 2, tIdx), fileName+":26");
+    COMPARE_DATA(stackModel->index(1, 0, tIdx), "1");
+    COMPARE_DATA(stackModel->index(1, 1, tIdx), "foo");
+    COMPARE_DATA(stackModel->index(1, 2, tIdx), fileName+":24");
+    COMPARE_DATA(stackModel->index(2, 0, tIdx), "2");
+    COMPARE_DATA(stackModel->index(2, 1, tIdx), "foo");
+    COMPARE_DATA(stackModel->index(2, 2, tIdx), fileName+":24");
+    COMPARE_DATA(stackModel->index(19, 0, tIdx), "19");
+    COMPARE_DATA(stackModel->index(20, 0, tIdx), "20");
 
     stackModel->fetchMoreFrames();
     QTest::qWait(200);
     QCOMPARE(stackModel->fetchFramesCalled, 2);
     QCOMPARE(stackModel->rowCount(tIdx), 41);
-    COMPARE_DATA(tIdx.child(20, 0), "20");
-    COMPARE_DATA(tIdx.child(21, 0), "21");
-    COMPARE_DATA(tIdx.child(22, 0), "22");
-    COMPARE_DATA(tIdx.child(39, 0), "39");
-    COMPARE_DATA(tIdx.child(40, 0), "40");
+    COMPARE_DATA(stackModel->index(20, 0, tIdx), "20");
+    COMPARE_DATA(stackModel->index(21, 0, tIdx), "21");
+    COMPARE_DATA(stackModel->index(22, 0, tIdx), "22");
+    COMPARE_DATA(stackModel->index(39, 0, tIdx), "39");
+    COMPARE_DATA(stackModel->index(40, 0, tIdx), "40");
 
     stackModel->fetchMoreFrames();
     QTest::qWait(200);
     QCOMPARE(stackModel->fetchFramesCalled, 3);
     QCOMPARE(stackModel->rowCount(tIdx), 121);
-    COMPARE_DATA(tIdx.child(40, 0), "40");
-    COMPARE_DATA(tIdx.child(41, 0), "41");
-    COMPARE_DATA(tIdx.child(42, 0), "42");
-    COMPARE_DATA(tIdx.child(119, 0), "119");
-    COMPARE_DATA(tIdx.child(120, 0), "120");
+    COMPARE_DATA(stackModel->index(40, 0, tIdx), "40");
+    COMPARE_DATA(stackModel->index(41, 0, tIdx), "41");
+    COMPARE_DATA(stackModel->index(42, 0, tIdx), "42");
+    COMPARE_DATA(stackModel->index(119, 0, tIdx), "119");
+    COMPARE_DATA(stackModel->index(120, 0, tIdx), "120");
 
     stackModel->fetchMoreFrames();
     QTest::qWait(200);
     QCOMPARE(stackModel->fetchFramesCalled, 4);
     QCOMPARE(stackModel->rowCount(tIdx), 301);
-    COMPARE_DATA(tIdx.child(120, 0), "120");
-    COMPARE_DATA(tIdx.child(121, 0), "121");
-    COMPARE_DATA(tIdx.child(122, 0), "122");
-    COMPARE_DATA(tIdx.child(300, 0), "300");
-    COMPARE_DATA(tIdx.child(300, 1), "main");
-    COMPARE_DATA(tIdx.child(300, 2), fileName+":30");
+    COMPARE_DATA(stackModel->index(120, 0, tIdx), "120");
+    COMPARE_DATA(stackModel->index(121, 0, tIdx), "121");
+    COMPARE_DATA(stackModel->index(122, 0, tIdx), "122");
+    COMPARE_DATA(stackModel->index(300, 0, tIdx), "300");
+    COMPARE_DATA(stackModel->index(300, 1, tIdx), "main");
+    COMPARE_DATA(stackModel->index(300, 2, tIdx), fileName+":30");
 
     stackModel->fetchMoreFrames(); //nothing to fetch, we are at the end
     QTest::qWait(200);
@@ -950,9 +949,9 @@ void GdbTest::testStackDeactivateAndActive()
     QTest::qWait(200);
     COMPARE_DATA(tIdx, "#1 at main");
     QCOMPARE(stackModel->rowCount(tIdx), 1);
-    COMPARE_DATA(tIdx.child(0, 0), "0");
-    COMPARE_DATA(tIdx.child(0, 1), "main");
-    COMPARE_DATA(tIdx.child(0, 2), debugeeFileName+":30");
+    COMPARE_DATA(stackModel->index(0, 0, tIdx), "0");
+    COMPARE_DATA(stackModel->index(0, 1, tIdx), "main");
+    COMPARE_DATA(stackModel->index(0, 2, tIdx), debugeeFileName+":30");
 
     session->run();
     WAIT_FOR_STATE(session, DebugSession::PausedState);
@@ -977,9 +976,9 @@ void GdbTest::testStackSwitchThread()
     QModelIndex tIdx = stackModel->index(0,0);
     COMPARE_DATA(tIdx, "#1 at main");
     QCOMPARE(stackModel->rowCount(tIdx), 1);
-    COMPARE_DATA(tIdx.child(0, 0), "0");
-    COMPARE_DATA(tIdx.child(0, 1), "main");
-    COMPARE_DATA(tIdx.child(0, 2), fileName+":39");
+    COMPARE_DATA(stackModel->index(0, 0, tIdx), "0");
+    COMPARE_DATA(stackModel->index(0, 1, tIdx), "main");
+    COMPARE_DATA(stackModel->index(0, 2, tIdx), fileName+":39");
 
     tIdx = stackModel->index(1,0);
     QVERIFY(stackModel->data(tIdx).toString().startsWith("#2 at "));

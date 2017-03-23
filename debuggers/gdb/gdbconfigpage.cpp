@@ -28,29 +28,20 @@
 
 #include <kconfiggroup.h>
 #include <KLocalizedString>
-#include <kshell.h>
 #include <kmessagebox.h>
-#include <kparts/mainwindow.h>
 
-#include <outputview/outputmodel.h>
 #include <interfaces/idebugcontroller.h>
 #include <interfaces/ilaunchconfiguration.h>
-#include <util/environmentgrouplist.h>
 #include <interfaces/iproject.h>
-#include <project/interfaces/iprojectbuilder.h>
-#include <project/builderjob.h>
-#include <interfaces/iuicontroller.h>
-#include <project/interfaces/ibuildsystemmanager.h>
 #include <util/executecompositejob.h>
 #include <execute/iexecuteplugin.h>
 
 #include "dbgglobal.h"
-#include "debugsession.h"
 #include "debuggerplugin.h"
 #include "midebugjobs.h"
 
 #include "ui_gdbconfigpage.h"
-#include <interfaces/iplugincontroller.h>
+#include <interfaces/iruncontroller.h>
 #include <interfaces/icore.h>
 
 using namespace KDevelop;

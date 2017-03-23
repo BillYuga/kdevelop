@@ -24,7 +24,6 @@
 #ifndef COMPILERWIDGET_H
 #define COMPILERWIDGET_H
 
-#include <QAbstractItemModel>
 #include <QVector>
 #include <QWidget>
 
@@ -68,7 +67,6 @@ private slots:
     void addCompiler(const QString& factoryName);
     void compilerSelected(const QModelIndex& index);
     void compilerEdited();
-    void selectCompilerPathDialog();
 
 signals:
     void compilerChanged();

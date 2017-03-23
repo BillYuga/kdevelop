@@ -26,7 +26,6 @@
 
 #include <QAbstractItemModel>
 #include <QItemSelection>
-#include <QHash>
 
 #include "../compilerprovider/icompiler.h"
 
@@ -42,6 +41,7 @@ public:
     };
 
     explicit CompilersModel( QObject* parent = nullptr );
+    ~CompilersModel() override;
 
     void setCompilers( const QVector<CompilerPointer>& compilers );
     QVector<CompilerPointer> compilers() const;

@@ -26,7 +26,6 @@
 #include <QHash>
 #include <util/stack.h>
 
-#include "cmakeastvisitor.h"
 #include "cmaketypes.h"
 #include <language/duchain/topducontext.h>
 
@@ -36,7 +35,6 @@ namespace KDevelop
 {
     class TopDUContext;
     class Declaration;
-class ITestController;
 }
 
 class KDEVCMAKECOMMON_EXPORT CMakeProjectVisitor : CMakeAstVisitor

@@ -22,9 +22,9 @@
 
 #include "clangtypes.h"
 
-#include <QFileInfo>
 #include <QReadLocker>
 
+#include <language/editor/rangeinrevision.h>
 #include <language/editor/documentcursor.h>
 #include <language/editor/documentrange.h>
 #include <util/path.h>

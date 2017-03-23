@@ -24,8 +24,6 @@
 
 #include <language/codecompletion/codecompletionmodel.h>
 
-#include <QMetaType>
-
 #include "clangprivateexport.h"
 
 class ClangIndex;
@@ -40,6 +38,10 @@ public:
 
     bool shouldStartCompletion(KTextEditor::View* view, const QString& inserted,
                                bool userInsertion, const KTextEditor::Cursor& position) override;
+
+    KTextEditor::Range completionRange(KTextEditor::View* view, const KTextEditor::Cursor& position) override;
+
+    bool shouldAbortCompletion(KTextEditor::View* view, const KTextEditor::Range& range, const QString& currentCompletion) override;
 
 signals:
     void requestCompletion(const QUrl &url, const KTextEditor::Cursor& cursor, const QString& text, const QString& followingText);

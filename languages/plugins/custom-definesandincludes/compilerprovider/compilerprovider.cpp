@@ -28,13 +28,9 @@
 #include "compilerfactories.h"
 #include "settingsmanager.h"
 
-#include <interfaces/icore.h>
 #include <interfaces/iproject.h>
-#include <interfaces/iprojectcontroller.h>
 #include <project/projectmodel.h>
 
-#include <KPluginFactory>
-#include <KAboutData>
 #include <KLocalizedString>
 #include <QStandardPaths>
 
@@ -152,7 +148,7 @@ Path::List CompilerProvider::includes( ProjectBaseItem* item ) const
     return config.compiler->includes(languageType == Utils::C ? config.parserArguments.cArguments : config.parserArguments.cppArguments);
 }
 
-Path::List CompilerProvider::frameworkDirectories( ProjectBaseItem* item ) const
+Path::List CompilerProvider::frameworkDirectories( ProjectBaseItem* /* item */ ) const
 {
     return {};
 }

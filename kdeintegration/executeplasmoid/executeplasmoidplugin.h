@@ -25,8 +25,7 @@
 
 #include <interfaces/iplugin.h>
 #include <execute/iexecuteplugin.h>
-#include <QtCore/QVariant>
-#include <QtCore/QProcess>
+#include <QVariantList>
 
 class PlasmoidExecutionConfigType;
 class QUrl;
@@ -44,7 +43,7 @@ class ExecutePlasmoidPlugin : public KDevelop::IPlugin, public IExecutePlugin
         QUrl executable(KDevelop::ILaunchConfiguration* config, QString& error) const override;
         QStringList arguments(KDevelop::ILaunchConfiguration* config, QString& error) const override;
         KJob* dependencyJob(KDevelop::ILaunchConfiguration* config) const override;
-        QString environmentGroup(KDevelop::ILaunchConfiguration* config) const override;
+        QString environmentProfileName(KDevelop::ILaunchConfiguration* config) const override;
         QString nativeAppConfigTypeId() const override;
         QString terminal(KDevelop::ILaunchConfiguration* config) const override;
         bool useTerminal(KDevelop::ILaunchConfiguration* config) const override;

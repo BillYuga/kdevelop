@@ -29,14 +29,10 @@
 #include <interfaces/ilauncher.h>
 #include <interfaces/launchconfigurationtype.h>
 #include <interfaces/ilaunchmode.h>
-#include <interfaces/iprojectcontroller.h>
-#include <util/processlinemaker.h>
 #include <util/executecompositejob.h>
-#include <outputview/outputmodel.h>
 
 #include <KConfigGroup>
 #include <KLocalizedString>
-#include <KCompositeJob>
 
 using namespace KDevelop;
 
@@ -58,7 +54,7 @@ CTestRunJob::CTestRunJob(CTestSuite* suite, const QStringList& cases, OutputJob:
 }
 
 
-KJob* createTestJob(QString launchModeId, QStringList arguments )
+KJob* createTestJob(const QString& launchModeId, const QStringList& arguments )
 {
     LaunchConfigurationType* type = ICore::self()->runController()->launchConfigurationTypeForId( "Native Application" );
     ILaunchMode* mode = ICore::self()->runController()->launchModeForId( launchModeId );
@@ -174,7 +170,7 @@ void CTestRunJob::processFinished(KJob* job)
 
 void CTestRunJob::rowsInserted(const QModelIndex &parent, int startRow, int endRow)
 {
-    // This regular expresion matches the name of the testcase (whatever between "::" and "(", indeed )
+    // This regular expression matches the name of the testcase (whatever between "::" and "(", indeed )
     // For example, from:
     //      PASS   : ExpTest::testExp(sum)
     // matches "testExp"

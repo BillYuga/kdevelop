@@ -23,6 +23,7 @@
 #include "declarationnavigationcontext.h"
 
 #include <language/duchain/topducontext.h>
+#include <language/duchain/navigation/abstractincludenavigationcontext.h>
 
 using namespace KDevelop;
 
@@ -34,16 +35,29 @@ NavigationWidget::NavigationWidget(KDevelop::Declaration* decl,
                                    const QString& htmlSuffix,
                                    KDevelop::AbstractNavigationWidget::DisplayHints hints)
 {
-    m_topContext = TopDUContextPointer(topContext);
-    m_startContext = NavigationContextPointer(new DeclarationNavigationContext(
+    auto context = new DeclarationNavigationContext(
         DeclarationPointer(decl),
-        m_topContext,
-        nullptr
-    ));
-
-    m_startContext->setPrefixSuffix(htmlPrefix, htmlSuffix);
-    m_hints = hints;
-    setContext(m_startContext);
+        TopDUContextPointer(topContext)
+    );
+    context->setPrefixSuffix(htmlPrefix, htmlSuffix);
+    setContext(NavigationContextPointer(context));
+    setDisplayHints(hints);
 }
 
+NavigationWidget::NavigationWidget(const KDevelop::IncludeItem& includeItem,
+                                   KDevelop::TopDUContextPointer topContext,
+                                   const QString& htmlPrefix,
+                                   const QString& htmlSuffix,
+                                   KDevelop::AbstractNavigationWidget::DisplayHints hints)
+    : AbstractNavigationWidget()
+{
+    setDisplayHints(hints);
+    initBrowser(200);
+
+    auto context = new AbstractIncludeNavigationContext(
+        includeItem, topContext,
+        StandardParsingEnvironment);
+    context->setPrefixSuffix(htmlPrefix, htmlSuffix);
+    setContext(NavigationContextPointer(context));
+}
 }

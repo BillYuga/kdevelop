@@ -19,8 +19,6 @@
 
 #include "test_files.h"
 
-#include "duchain/builder.h"
-
 #include <language/duchain/duchain.h>
 #include <language/duchain/problem.h>
 #include <language/codegen/coderepresentation.h>
@@ -38,7 +36,8 @@
 #include <tests/json/jsontypetests.h>
 #include <interfaces/ilanguagecontroller.h>
 
-#include <QtTest>
+#include <QTest>
+#include <QLoggingCategory>
 
 using namespace KDevelop;
 
@@ -68,7 +67,7 @@ void TestFiles::testFiles_data()
 {
     QTest::addColumn<QString>("fileName");
     const QString testDirPath = TEST_FILES_DIR;
-    const QStringList files = QDir(testDirPath).entryList({"*.h", "*.cpp", "*.c"}, QDir::Files);
+    const QStringList files = QDir(testDirPath).entryList({"*.h", "*.cpp", "*.c", "*.cl", "*.cu"}, QDir::Files);
     foreach (const QString& file, files) {
         QTest::newRow(file.toUtf8().constData()) << QString(testDirPath + '/' + file);
     }
@@ -80,6 +79,12 @@ void TestFiles::testFiles()
     const IndexedString indexedFileName(fileName);
     ReferencedTopDUContext top =
         DUChain::self()->waitForUpdate(indexedFileName, TopDUContext::AllDeclarationsContextsAndUses);
+    if (strcmp("test.cl", QTest::currentDataTag()) == 0) {
+        if (!top) {
+            QSKIP("Likely outdated shared-mime-info around, which doesn't know about the text/x-opencl-src mime type");
+        }
+    }
+
     QVERIFY(top);
     DUChainReadLocker lock;
     DeclarationValidator validator;

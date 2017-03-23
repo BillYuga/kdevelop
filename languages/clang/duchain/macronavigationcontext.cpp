@@ -29,16 +29,11 @@
 
 #include <language/duchain/duchain.h>
 #include <language/duchain/declaration.h>
-#include <serialization/indexedstring.h>
-#include <interfaces/icore.h>
-#include <interfaces/ipartcontroller.h>
-
-#include <QVBoxLayout>
-#include <QLabel>
 
 using namespace KDevelop;
 
-MacroNavigationContext::MacroNavigationContext(const MacroDefinition::Ptr& macro, const KDevelop::DocumentCursor& expansionLocation)
+MacroNavigationContext::MacroNavigationContext(const MacroDefinition::Ptr& macro,
+                                               const KDevelop::DocumentCursor& /* expansionLocation */)
     : m_macro(macro)
 {
 }
@@ -57,7 +52,7 @@ QString MacroNavigationContext::html(bool shorten)
     clear();
 
     modifyHtml() += QLatin1String("<html><body><p>") + fontSizePrefix(shorten);
-    addExternalHtml(m_prefix);
+    addExternalHtml(prefix());
 
     QStringList parameterList;
     FOREACH_FUNCTION(const auto& parameter, m_macro->parameters) {

@@ -24,10 +24,9 @@
 #include "qmakeparser.h"
 #include "ast.h"
 
-#include <QtCore/QPair>
 #include <QDebug>
 
-#include "debug.h"
+#include "../debug.h"
 
 namespace QMake {
 

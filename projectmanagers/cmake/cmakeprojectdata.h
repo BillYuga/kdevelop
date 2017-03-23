@@ -1,6 +1,6 @@
 /* KDevelop CMake Support
  *
- * Copyright 2013 Aleix Pol <aleixpol@kde.org>
+ * Copyright 2013-2017 Aleix Pol <aleixpol@kde.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,6 +27,8 @@
 #include "cmaketypes.h"
 #include <util/path.h>
 
+class CMakeServer;
+
 /**
  * Represents any file in a cmake project that has been added
  * to the project.
@@ -45,7 +47,7 @@ inline QDebug &operator<<(QDebug debug, const CMakeFile& file)
     return debug.maybeSpace();
 }
 
-struct CMakeJsonData
+struct CMakeFilesCompilationData
 {
     QHash<KDevelop::Path, CMakeFile> files;
     bool isValid = false;
@@ -53,14 +55,17 @@ struct CMakeJsonData
 
 struct CMakeProjectData
 {
+    CMakeProjectData(const QHash<KDevelop::Path, QStringList> &targets, const CMakeFilesCompilationData &data, const QVector<Test> &tests);
+
     CMakeProjectData() : watcher(new QFileSystemWatcher) {}
     ~CMakeProjectData() {}
 
-    CMakeProperties properties;
-    CacheValues cache;
-    CMakeJsonData jsonData;
+    CMakeFilesCompilationData compilationData;
     QHash<KDevelop::Path, QStringList> targets;
     QSharedPointer<QFileSystemWatcher> watcher;
+    QSharedPointer<CMakeServer> m_server;
+
+    QVector<Test> m_testSuites;
 };
 
 #endif

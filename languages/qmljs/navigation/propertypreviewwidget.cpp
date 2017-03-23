@@ -21,9 +21,8 @@
 
 #include <QQuickWidget>
 #include <QQuickItem>
-#include <QLayout>
+#include <QHBoxLayout>
 #include <QLabel>
-#include <QDir>
 #include <QStandardPaths>
 #include <KLocalizedString>
 #include <KTextEditor/Document>
@@ -83,7 +82,7 @@ QWidget* PropertyPreviewWidget::constructIfPossible(KTextEditor::Document* doc,
         // Appearance
         PROP("opacity", "Opacity.qml", QString(), QString())
 
-        // Type-dependend widgets
+        // Type-dependent widgets
         PROP(QString(), "ColorPicker.qml", "color", QString())
     }
 #undef PROP

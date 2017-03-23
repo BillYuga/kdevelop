@@ -1,11 +1,10 @@
 <!DOCTYPE kpartgui>
-<gui name="kdevcppcheck" version="8">
+<kpartgui name="kdevcppcheck" version="8" translationDomain="kdevcppcheck">
 <MenuBar>
   <Menu name="analyze">
-  <text context="@title:menu">Analyze</text>
     <Action name="cppcheck_file"/>
     <Action name="cppcheck_project"/>
     <Separator/>
   </Menu>
 </MenuBar>
-</gui>
+</kpartgui>

@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 #include "qmakejob.h"
-#include <QtCore/QFileInfo>
 #include <QtCore/QDir>
 #include <QDebug>
 #include <QProcess>
@@ -75,7 +74,7 @@ void QMakeJob::setExtraArguments(const QString& args)
 
 void QMakeJob::start()
 {
-    static const char* BUILD_TYPES[] = { "debug", "build", "(don't specify)" };
+    static const char* const BUILD_TYPES[] = { "debug", "build", "(don't specify)" };
 
     m_model = new OutputModel;
     setModel(m_model);

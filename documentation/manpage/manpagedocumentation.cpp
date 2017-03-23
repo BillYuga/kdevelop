@@ -18,13 +18,7 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include <QLabel>
 #include <KLocalizedString>
-#include <QTreeView>
-#include <QHeaderView>
-#include <QProgressBar>
-#include <QVBoxLayout>
-#include <QStackedWidget>
 #include <QStandardPaths>
 
 #include "manpagedocumentation.h"
@@ -32,12 +26,10 @@
 #include "manpagedocumentationwidget.h"
 
 #include <KIO/TransferJob>
-#include <KIO/Job>
 #include <kio/jobclasses.h>
 #include <documentation/standarddocumentationview.h>
 
 ManPagePlugin* ManPageDocumentation::s_provider=nullptr;
-
 
 ManPageDocumentation::ManPageDocumentation(const QString& name, const QUrl& url)
     : m_url(url), m_name(name)
@@ -72,14 +64,12 @@ QWidget* ManPageDocumentation::documentationWidget(KDevelop::DocumentationFindWi
 {
     KDevelop::StandardDocumentationView* view = new KDevelop::StandardDocumentationView(findWidget, parent);
     view->setDocumentation(IDocumentation::Ptr(this));
+    view->setDelegateLinks(true);
+    QObject::connect(view, &KDevelop::StandardDocumentationView::linkClicked, ManPageDocumentation::s_provider->model(), &ManPageModel::showItemFromUrl);
 
     // apply custom style-sheet to normalize look of the page
     const QString cssFile = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "kdevmanpage/manpagedocumentation.css");
-    QWebSettings* settings = view->settings();
-    settings->setUserStyleSheetUrl(QUrl::fromLocalFile(cssFile));
-
-    view->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
-    QObject::connect(view, &KDevelop::StandardDocumentationView::linkClicked, ManPageDocumentation::s_provider->model(), &ManPageModel::showItemFromUrl);
+    view->setOverrideCss(QUrl::fromLocalFile(cssFile));
     return view;
 }
 

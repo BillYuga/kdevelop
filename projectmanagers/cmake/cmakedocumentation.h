@@ -23,7 +23,6 @@
 
 #include <QString>
 #include <QMap>
-#include <QStringList>
 #include <QVariantList>
 #include <interfaces/iplugin.h>
 #include "icmakedocumentation.h"
@@ -65,7 +64,7 @@ class CMakeDocumentation : public KDevelop::IPlugin, public ICMakeDocumentation
         void collectIds(const QString& param, Type type);
         
         QMap<QString, Type> m_typeForName;
-        const QString mCMakeCmd;
+        const QString m_cmakeExecutable;
         QStringListModel* m_index;
 };
 

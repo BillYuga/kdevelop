@@ -26,7 +26,6 @@
 #include "makebuilderconfig.h"
 
 class QWidget;
-class QStringList;
 namespace Ui { class MakeConfig; }
 
 class MakeBuilderPreferences : public ProjectConfigPage<MakeBuilderSettings>
@@ -44,7 +43,7 @@ public:
     QString fullName() const override;
     QIcon icon() const override;
 
-    static QString standardMakeCommand();
+    static QString standardMakeExecutable();
 
 private:
     Ui::MakeConfig* m_prefsUi;

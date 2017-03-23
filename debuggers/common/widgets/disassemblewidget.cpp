@@ -37,17 +37,15 @@
 
 #include <KLocalizedString>
 #include <KSharedConfig>
-#include <KTextEdit>
 
 #include <QShowEvent>
 #include <QHideEvent>
 #include <QAction>
 #include <QMenu>
-#include <QBoxLayout>
-#include <QComboBox>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QPushButton>
 #include <QSplitter>
-#include <QHeaderView>
 #include <QFontDatabase>
 
 using namespace KDevMI;
@@ -175,6 +173,7 @@ DisassembleWidget::DisassembleWidget(MIDebuggerPlugin* plugin, QWidget *parent)
         m_splitter(new KDevelop::AutoOrientedSplitter(this))
 {
         QVBoxLayout* topLayout = new QVBoxLayout(this);
+        topLayout->setMargin(0);
 
         QHBoxLayout* controlsLayout = new QHBoxLayout;
 

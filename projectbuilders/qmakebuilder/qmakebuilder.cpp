@@ -24,19 +24,15 @@
 #include "qmakeconfig.h"
 #include "qmakeutils.h"
 
-#include <QtCore/QStringList>
 #include <QDebug>
 #include <project/projectmodel.h>
 
 #include <interfaces/iproject.h>
 #include <interfaces/icore.h>
 #include <interfaces/iplugincontroller.h>
-#include <outputview/ioutputview.h>
 #include <makebuilder/imakebuilder.h>
-#include <util/commandexecutor.h>
 
 #include <kpluginfactory.h>
-#include <kaboutdata.h>
 
 #include "qmakejob.h"
 #include "qmakebuilderdebug.h"

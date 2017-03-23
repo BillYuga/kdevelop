@@ -25,13 +25,10 @@
 
 #include "config.h"
 
-#include <QByteArray>
-#include <QLabel>
-#include <QtCore/QVariant>
+#include <QVariantList>
 
 #include <KConfigGroup>
 #include <KTextEditor/Cursor>
-#include <QUrl>
 
 #include <interfaces/iplugin.h>
 #include <interfaces/istatus.h>
@@ -39,19 +36,7 @@
 #include "midebuggerplugin.h"
 #include "debugsession.h"
 
-class QLabel;
-class QMenu;
-class QDBusInterface;
-class QSignalMapper;
-class ProcessWidget;
-
-class KToolBar;
-class QAction;
-
-namespace KDevelop {
-class Context;
-class ProcessLineMaker;
-}
+class GdbLauncher;
 
 namespace KDevMI {
 class DisassembleWidget;
@@ -70,14 +55,19 @@ public:
     explicit CppDebuggerPlugin(QObject *parent, const QVariantList & = QVariantList());
     ~CppDebuggerPlugin() override;
 
+    void unload() override;
+
     DebugSession *createSession() override;
     void unloadToolviews() override;
     void setupToolviews() override;
 
 private:
+    void setupExecutePlugin(KDevelop::IPlugin* plugin, bool load);
+
     DebuggerToolFactory<DisassembleWidget>* disassemblefactory;
     DebuggerToolFactory<GDBOutputWidget, CppDebuggerPlugin>* gdbfactory;
     DebuggerToolFactory<MemoryViewerWidget, CppDebuggerPlugin>* memoryviewerfactory;
+    QHash<KDevelop::IPlugin*, GdbLauncher*> m_launchers;
 };
 
 } // end of namespace GDB

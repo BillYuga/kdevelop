@@ -31,19 +31,16 @@
 
 #include <execute/iexecuteplugin.h>
 #include <interfaces/icore.h>
-#include <interfaces/iplugincontroller.h>
 #include <interfaces/iproject.h>
 #include <interfaces/ilaunchconfiguration.h>
 #include <interfaces/iuicontroller.h>
 #include <outputview/outputmodel.h>
-#include <util/environmentgrouplist.h>
 
 #include <KConfigGroup>
 #include <KLocalizedString>
 #include <KParts/MainWindow>
 
 #include <QFileInfo>
-#include <QRegularExpression>
 
 using namespace KDevMI;
 using namespace KDevelop;
@@ -172,7 +169,7 @@ void MIExamineCoreJob::start()
         return;
     }
 
-    if (!m_session->examineCoreFile(dlg.binary(), dlg.core())) {
+    if (!m_session->examineCoreFile(dlg.executableFile(), dlg.core())) {
         done();
     }
 }

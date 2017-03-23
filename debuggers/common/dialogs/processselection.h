@@ -24,6 +24,7 @@
 #include <QDialog>
 
 class KSysGuardProcessList;
+class QItemSelection;
 class QPushButton;
 
 namespace KDevMI {
@@ -38,11 +39,11 @@ class ProcessSelectionDialog : public QDialog
         QSize sizeHint() const override;
 
     private slots:
-        void selectionChanged();
+        void selectionChanged( const QItemSelection& selected );
 
     private:
         KSysGuardProcessList* m_processList;
-        QPushButton* m_okButton;
+        QPushButton* m_attachButton;
 };
 
 } // end of namespace KDevMI

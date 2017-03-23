@@ -23,19 +23,15 @@
 
 #include <interfaces/iplugin.h>
 #include <QtCore/QList>
-#include <QtCore/QVariant>
-#include <QtCore/QPair>
-#include <QtCore/QSet>
+#include <QVariantList>
 #include <QUrl>
 #include <project/interfaces/iprojectbuilder.h>
 
 class QStringList;
-class QSignalMapper;
 class KDialog;
+
 namespace KDevelop{
     class ProjectBaseItem;
-    class CommandExecutor;
-    class OutputModel;
 }
 
 /**
@@ -59,9 +55,6 @@ public:
 	QList< KDevelop::IProjectBuilder* > additionalBuilderPlugins( KDevelop::IProject* project ) const override;
 
 //     bool updateConfig( KDevelop::IProject* project );
-
-    static QStringList supportedGenerators();
-    static QString defaultGenerator();
 
     int configPages() const override;
     KDevelop::ConfigPage* configPage(int number, QWidget* parent) override;

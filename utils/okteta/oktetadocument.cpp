@@ -41,15 +41,15 @@
 #include <shell/uicontroller.h>
 #include <interfaces/icore.h>
 #include <interfaces/iuicontroller.h>
-#include <interfaces/idocumentcontroller.h>
 // Sublime
 #include <sublime/mainwindow.h>
 #include <sublime/view.h>
 #include <sublime/area.h>
 #include <sublime/controller.h>
-// KDE
+// KF
 #include <KMessageBox>
 #include <KLocalizedString>
+#include <KTextEditor/Cursor>
 // Qt
 #include <QApplication>
 #include <QMimeDatabase>
@@ -190,10 +190,8 @@ bool OktetaDocument::isActive() const
 void OktetaDocument::setCursorPosition( const KTextEditor::Cursor& ) {}
 void OktetaDocument::setTextSelection( const KTextEditor::Range& ) {}
 
-void OktetaDocument::activate( Sublime::View* view, KParts::MainWindow* mainWindow )
+void OktetaDocument::activate( Sublime::View* /* view */, KParts::MainWindow* /* mainWindow */ )
 {
-    Q_UNUSED(view);
-    Q_UNUSED(mainWindow);
     notifyActivated();
 }
 
@@ -202,10 +200,8 @@ void OktetaDocument::setPlugin( OktetaPlugin* plugin )
     mPlugin = plugin;
 }
 
-Sublime::View* OktetaDocument::newView( Sublime::Document* document )
+Sublime::View* OktetaDocument::newView( Sublime::Document* /* document */ )
 {
-    Q_UNUSED(document);
-
     if( mByteArrayDocument == nullptr )
     {
         Kasten::ByteArrayRawFileSynchronizerFactory* synchronizerFactory =

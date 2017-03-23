@@ -22,7 +22,7 @@ class {{ name }} : public QObject
 {% block class_body %}
     Q_OBJECT
     {% for property in members %}
-    Q_PROPERTY({{ property.type }} {{ property.name }} READ {{ property.name }} WRITE set{{ property.name|upper_first }})
+    {% include "class_qproperty_declaration_cpp.txt" %}
     {% endfor %}
 
 
@@ -50,6 +50,13 @@ public Q_SLOTS:
 
     {% include "class_property_setter_declaration_apidox_cpp.txt" %}
     {% include "class_property_setter_declaration_cpp.txt" %}
+
+    {% endfor %}
+
+Q_SIGNALS:
+    {% for property in members %}
+
+    {% include "class_property_signal_declaration_cpp.txt" %}
 
     {% endfor %}
 {% endif %}

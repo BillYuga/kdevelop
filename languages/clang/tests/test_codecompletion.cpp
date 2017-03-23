@@ -34,7 +34,6 @@
 
 #include <interfaces/idocumentcontroller.h>
 #include <interfaces/ilanguagecontroller.h>
-#include <interfaces/iplugincontroller.h>
 
 #include <language/codecompletion/codecompletiontesthelper.h>
 #include <language/duchain/types/functiontype.h>
@@ -76,7 +75,7 @@ Q_DECLARE_METATYPE(CompletionItems);
 
 struct CompletionPriorityItem
 {
-    CompletionPriorityItem(const QString name, int matchQuality = 0, int inheritanceDepth = 0, const QString failMessage = {})
+    CompletionPriorityItem(const QString& name, int matchQuality = 0, int inheritanceDepth = 0, const QString& failMessage = {})
         : name(name)
         , failMessage(failMessage)
         , matchQuality(matchQuality)
@@ -908,6 +907,16 @@ void TestCodeCompletion::testIncludePathCompletion_data()
                               << QString("foo/") << QString("#include \"foo/\"");
     QTest::newRow("local-7") << QString("#include \"foo/asdf\"") << KTextEditor::Cursor(0, 14)
                               << QString("bar/") << QString("#include \"foo/bar/\"");
+    QTest::newRow("dash-1") << QString("#include \"") << KTextEditor::Cursor(0, 10)
+                              << QString("dash-file.h") << QString("#include \"dash-file.h\"");
+    QTest::newRow("dash-2") << QString("#include \"dash-") << KTextEditor::Cursor(0, 15)
+                              << QString("dash-file.h") << QString("#include \"dash-file.h\"");
+    QTest::newRow("dash-4") << QString("#include \"dash-file.h\"") << KTextEditor::Cursor(0, 13)
+                              << QString("dash-file.h") << QString("#include \"dash-file.h\"");
+    QTest::newRow("dash-5") << QString("#include \"dash-file.h\"") << KTextEditor::Cursor(0, 14)
+                              << QString("dash-file.h") << QString("#include \"dash-file.h\"");
+    QTest::newRow("dash-6") << QString("#include \"dash-file.h\"") << KTextEditor::Cursor(0, 15)
+                              << QString("dash-file.h") << QString("#include \"dash-file.h\"");
 }
 
 void TestCodeCompletion::testIncludePathCompletion()
@@ -921,6 +930,10 @@ void TestCodeCompletion::testIncludePathCompletion()
     QDir dir(tempDir.path());
     QVERIFY(dir.mkpath("foo/bar/asdf"));
     TestFile file(code, "cpp", nullptr, tempDir.path());
+    {
+        QFile otherFile(tempDir.path() + "/dash-file.h");
+        QVERIFY(otherFile.open(QIODevice::WriteOnly));
+    }
     IncludeTester tester(executeIncludePathCompletion(&file, cursor));
     QVERIFY(tester.completionContext);
     QVERIFY(tester.completionContext->isValid());
@@ -929,7 +942,6 @@ void TestCodeCompletion::testIncludePathCompletion()
     QVERIFY(item);
 
     auto view = createView(file.url().toUrl(), this);
-    qDebug() << view.get();
     QVERIFY(view.get());
     auto doc = view->document();
     item->execute(view.get(), KTextEditor::Range(cursor, cursor));

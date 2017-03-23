@@ -72,10 +72,21 @@ QVector<QByteArray> argsForSession(const QString& path, ParseSessionData::Option
         return {QByteArrayLiteral("-xobjective-c++")};
     }
 
+    // TODO: No proper mime type detection possible yet
+    // cf. https://bugs.freedesktop.org/show_bug.cgi?id=26913
+    if (path.endsWith(QLatin1String(".cl"), Qt::CaseInsensitive)) {
+        return {QByteArrayLiteral("-xcl")};
+    }
+
+    // TODO: No proper mime type detection possible yet
+    // cf. https://bugs.freedesktop.org/show_bug.cgi?id=23700
+    if (path.endsWith(QLatin1String(".cu"), Qt::CaseInsensitive)) {
+        return {QByteArrayLiteral("-xcuda")};
+    }
+
     if (parserSettings.parserOptions.isEmpty()) {
         // The parserOptions can be empty for some unit tests that use ParseSession directly
         auto defaultArguments = ClangSettingsManager::self()->parserSettings(path).toClangAPI();
-        Q_ASSERT(!defaultArguments.isEmpty());
         defaultArguments.append(QByteArrayLiteral("-nostdinc"));
         defaultArguments.append(QByteArrayLiteral("-nostdinc++"));
         defaultArguments.append(QByteArrayLiteral("-xc++"));

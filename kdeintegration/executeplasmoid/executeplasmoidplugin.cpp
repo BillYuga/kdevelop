@@ -25,9 +25,10 @@
 #include "plasmoidexecutionjob.h"
 #include "debug.h"
 #include <kpluginfactory.h>
-#include <KAboutData>
 #include <QUrl>
+
 #include <interfaces/icore.h>
+#include <interfaces/iruncontroller.h>
 
 using namespace KDevelop;
 
@@ -73,7 +74,7 @@ QUrl ExecutePlasmoidPlugin::workingDirectory(ILaunchConfiguration* config) const
     return QUrl::fromLocalFile(PlasmoidExecutionJob::workingDirectory(config));
 }
 
-QString ExecutePlasmoidPlugin::environmentGroup(ILaunchConfiguration* /*config*/) const
+QString ExecutePlasmoidPlugin::environmentProfileName(ILaunchConfiguration* /*config*/) const
 {
     return QString();
 }

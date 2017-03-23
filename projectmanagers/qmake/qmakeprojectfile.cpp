@@ -24,8 +24,6 @@
 #include <QtCore/QStringList>
 #include <QtCore/QDir>
 
-#include <kprocess.h>
-
 #include "debug.h"
 #include "parser/ast.h"
 #include "qmakecache.h"
@@ -104,16 +102,16 @@ bool QMakeProjectFile::read()
     const QString qtVersion = QStringLiteral("QT_VERSION");
     const QString qtInstallLibs = QStringLiteral("QT_INSTALL_LIBS");
 
-    const QString binary = QMakeConfig::qmakeBinary(project());
-    if (!m_qmakeQueryCache.contains(binary)) {
-        const auto queryResult = QMakeConfig::queryQMake(binary, {qtInstallHeaders, qtVersion, qtInstallLibs});
+    const QString executable = QMakeConfig::qmakeExecutable(project());
+    if (!m_qmakeQueryCache.contains(executable)) {
+        const auto queryResult = QMakeConfig::queryQMake(executable, {qtInstallHeaders, qtVersion, qtInstallLibs});
         if (queryResult.isEmpty()) {
-            qCWarning(KDEV_QMAKE) << "Failed to query qmake - bad qmake binary configured?" << binary;
+            qCWarning(KDEV_QMAKE) << "Failed to query qmake - bad qmake executable configured?" << executable;
         }
-        m_qmakeQueryCache[binary] = queryResult;
+        m_qmakeQueryCache[executable] = queryResult;
     }
 
-    const auto cachedQueryResult = m_qmakeQueryCache.value(binary);
+    const auto cachedQueryResult = m_qmakeQueryCache.value(executable);
     m_qtIncludeDir = cachedQueryResult.value(qtInstallHeaders);
     m_qtVersion = cachedQueryResult.value(qtVersion);
     m_qtLibDir = cachedQueryResult.value(qtInstallLibs);
@@ -162,12 +160,12 @@ bool QMakeProjectFile::hasSubProject(const QString& file) const
     return false;
 }
 
-void QMakeProjectFile::addPathsForVariable(const QString& variable, QStringList* list) const
+void QMakeProjectFile::addPathsForVariable(const QString& variable, QStringList* list, const QString& base) const
 {
     const QStringList values = variableValues(variable);
     ifDebug(qCDebug(KDEV_QMAKE) << variable << values;) foreach (const QString& val, values)
     {
-        QString path = resolveToSingleFileName(val);
+        QString path = resolveToSingleFileName(val, base);
         if (!path.isEmpty() && !list->contains(val)) {
             list->append(path);
         }
@@ -246,9 +244,9 @@ QStringList QMakeProjectFile::includeDirectories() const
         addPathsForVariable("QMAKE_INCDIR_X11", &list);
     }
 
-    addPathsForVariable("MOC_DIR", &list);
-    addPathsForVariable("OBJECTS_DIR", &list);
-    addPathsForVariable("UI_DIR", &list);
+    addPathsForVariable("MOC_DIR", &list, outPwd());
+    addPathsForVariable("OBJECTS_DIR", &list, outPwd());
+    addPathsForVariable("UI_DIR", &list, outPwd());
 
     ifDebug(qCDebug(KDEV_QMAKE) << "final list:" << list;) return list;
 }

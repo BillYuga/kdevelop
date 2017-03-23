@@ -21,12 +21,9 @@
 
 #include <QWidget>
 
-#include <qabstractitemmodel.h>
-
 #include "../compilerprovider/icompiler.h"
 #include "../compilerprovider/settingsmanager.h"
 
-class KUrlRequester;
 namespace Ui
 {
 class ProjectPathsWidget;
@@ -38,7 +35,6 @@ namespace KDevelop
 }
 
 class ProjectPathsModel;
-class QItemSelection;
 
 class ProjectPathsWidget : public QWidget
 {
@@ -46,8 +42,8 @@ Q_OBJECT
 public:
     explicit ProjectPathsWidget( QWidget* parent = nullptr );
     void setProject(KDevelop::IProject* w_project);
-    void setPaths( const QList<ConfigEntry>& );
-    QList<ConfigEntry> paths() const;
+    void setPaths( const QVector<ConfigEntry>& );
+    QVector<ConfigEntry> paths() const;
     void clear();
 
 signals:

@@ -33,7 +33,7 @@
 #include <QSignalSpy>
 
 static QString currentBuildDirKey = "Build Directory Path";
-static QString currentCMakeBinaryKey = "CMake Binary";
+static QString currentCMakeExecutableKey = "CMake Binary";
 static QString currentBuildTypeKey = "Build Type";
 static QString currentInstallDirKey = "Install Directory";
 static QString currentExtraArgumentsKey = "Extra Arguments";
@@ -51,7 +51,7 @@ struct TestProjectPaths {
     KDevelop::Path configFile;
 };
 
-TestProjectPaths projectPaths(const QString& project, QString name = QString())
+TestProjectPaths projectPaths(const QString& project, const QString& name = QString())
 {
     TestProjectPaths paths;
     if(QDir::isRelativePath(project)) {
@@ -110,7 +110,7 @@ void defaultConfigure(const TestProjectPaths& paths)
 
     KConfigGroup buildDirGrp = cmakeGrp.group(QStringLiteral("CMake Build Directory 0"));
     buildDirGrp.writeEntry( currentBuildDirKey, bd.buildFolder().toLocalFile() );
-    buildDirGrp.writeEntry( currentCMakeBinaryKey, bd.cmakeBinary().toLocalFile() );
+    buildDirGrp.writeEntry(currentCMakeExecutableKey, bd.cmakeExecutable().toLocalFile());
     buildDirGrp.writeEntry( currentInstallDirKey, bd.installPrefix().toLocalFile() );
     buildDirGrp.writeEntry( currentExtraArgumentsKey, bd.extraArguments() );
     buildDirGrp.writeEntry( currentBuildTypeKey, bd.buildType() );
@@ -132,8 +132,9 @@ KDevelop::IProject* loadProject(const QString& name, const QString& relative = Q
 
     KDevelop::ICore::self()->projectController()->openProject(paths.projectFile.toUrl());
 
-    if ( spy.isEmpty() && !spy.wait(30000) )
+    if ( spy.isEmpty() && !spy.wait(30000) ) {
         qFatal( "Timeout while waiting for opened signal" );
+    }
 
     KDevelop::IProject* project = KDevelop::ICore::self()->projectController()->findProjectByName(name);
     Q_ASSERT(project);

@@ -22,7 +22,6 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-#include <KConfigGroup>
 #include <KLocalizedString>
 #include <KMessageBox>
 #include <KPasswordDialog>
@@ -158,7 +157,7 @@ void Dialog::syncUser()
     rs->getOrgs(m_account->token());
 }
 
-void Dialog::updateOrgs(const QStringList orgs)
+void Dialog::updateOrgs(const QStringList& orgs)
 {
     Resource *rs = m_account->resource();
     disconnect(rs, &Resource::orgsUpdated,

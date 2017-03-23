@@ -26,8 +26,7 @@
 #include <interfaces/iproject.h>
 #include <outputview/outputmodel.h>
 #include <outputview/outputdelegate.h>
-#include <util/processlinemaker.h>
-#include <util/environmentgrouplist.h>
+#include <util/environmentprofilelist.h>
 #include <util/commandexecutor.h>
 #include <project/projectmodel.h>
 
@@ -129,6 +128,7 @@ void CustomBuildJob::start()
             setError( WrongArgs );
             setErrorText( i18n( "The given arguments would need a real shell, this is not supported currently." ) );
             emitResult();
+            return;
         }
         // and remove the command name back out of the split argument list
         Q_ASSERT(!strargs.isEmpty());
@@ -144,7 +144,7 @@ void CustomBuildJob::start()
 
         exec = new KDevelop::CommandExecutor( cmd, this );
 
-        auto env = KDevelop::EnvironmentGroupList( KSharedConfig::openConfig() ).createEnvironment( environment, QProcess::systemEnvironment() );
+        auto env = KDevelop::EnvironmentProfileList(KSharedConfig::openConfig()).createEnvironment(environment, QProcess::systemEnvironment());
         if (!installPrefix.isEmpty())
             env.append("DESTDIR="+installPrefix.toDisplayString(QUrl::PreferLocalFile));
 

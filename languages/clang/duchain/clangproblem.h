@@ -26,6 +26,7 @@
 #include "clangprivateexport.h"
 
 #include <language/duchain/problem.h>
+#include <language/editor/documentrange.h>
 #include <interfaces/iassistant.h>
 
 #include <clang-c/Index.h>
@@ -45,6 +46,19 @@ struct KDEVCLANGPRIVATE_EXPORT ClangFixit
             && currentText == other.currentText;
     }
 };
+
+namespace QTest {
+template<>
+inline char *toString(const ClangFixit& fixit)
+{
+    QByteArray ba = "ClangFixit[replacementText=" + fixit.replacementText.toUtf8()
+        + ", range=" + QByteArray(QTest::toString(fixit.range))
+        + ", description=" + fixit.description.toUtf8()
+        + ", currentText=" + fixit.currentText.toUtf8()
+        + "]";
+    return qstrdup(ba.data());
+}
+}
 
 QDebug KDEVCLANGPRIVATE_EXPORT operator<<(QDebug debug, const ClangFixit& fixit);
 

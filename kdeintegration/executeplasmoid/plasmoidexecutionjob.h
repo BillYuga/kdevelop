@@ -24,13 +24,11 @@
 #include <QtCore/QProcess>
 #include <outputview/outputjob.h>
 
-class QUrl;
 class ExecutePlasmoidPlugin;
 
 namespace KDevelop
 {
 class ILaunchConfiguration;
-class ProcessLineMaker;
 class OutputModel;
 class CommandExecutor;
 }

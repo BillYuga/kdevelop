@@ -45,8 +45,10 @@
 #include <project/projectmodel.h>
 #include <util/path.h>
 
+#include <KLocalizedString>
+
 #include <QDir>
-#include <QProcess>
+#include <QRegularExpression>
 
 #include <algorithm>
 
@@ -155,6 +157,8 @@ int sharedPathLevel(const QString& a, const QString& b)
  */
 KDevelop::DocumentRange includeDirectivePosition(const KDevelop::Path& source, const QString& includeFile)
 {
+    static const QRegularExpression mocFilenameExpression(QStringLiteral("(moc_[^\\/\\\\]+\\.cpp$|\\.moc$)") );
+
     DUChainReadLocker lock;
     const TopDUContext* top = DUChainUtils::standardContextForUrl( source.toUrl() );
     if( !top ) {
@@ -168,8 +172,15 @@ KDevelop::DocumentRange includeDirectivePosition(const KDevelop::Path& source, c
     int currentMatchQuality = -1;
     for( const auto& import : top->importedParentContexts() ) {
 
-        const int matchQuality = sharedPathLevel( import.context(top)->url().str(), includeFile );
+        const auto importFilename = import.context(top)->url().str();
+        const int matchQuality = sharedPathLevel( importFilename , includeFile );
         if( matchQuality < currentMatchQuality ) {
+            continue;
+        }
+
+        const auto match = mocFilenameExpression.match(importFilename);
+        if (match.isValid()) {
+            clangDebug() << "moc file detected in" << source.toUrl().toDisplayString() << ":" << importFilename << "-- not using as include insertion location";
             continue;
         }
 
@@ -260,7 +271,9 @@ QVector<KDevelop::QualifiedIdentifier> findPossibleQualifiedIdentifiers( const Q
     return declarations;
 }
 
-QStringList findMatchingIncludeFiles(const QVector<Declaration*> declarations)
+}
+
+QStringList UnknownDeclarationProblem::findMatchingIncludeFiles(const QVector<Declaration*>& declarations)
 {
     DUChainReadLocker lock;
 
@@ -315,6 +328,8 @@ QStringList findMatchingIncludeFiles(const QVector<Declaration*> declarations)
     return candidates;
 }
 
+namespace {
+
 /**
  * Takes a filepath and the include paths and determines what directive to use.
  */
@@ -361,7 +376,7 @@ ClangFixit directiveForFile( const QString& includefile, const KDevelop::Path::L
     } else {
         directive = QStringLiteral("#include <%1>").arg(shortestDirective);
     }
-    return ClangFixit{directive + QLatin1Char('\n'), range, QObject::tr("Insert \'%1\'").arg(directive)};
+    return ClangFixit{directive + QLatin1Char('\n'), range, i18n("Insert \'%1\'", directive)};
 }
 
 KDevelop::Path::List includePaths( const KDevelop::Path& file )
@@ -376,7 +391,7 @@ KDevelop::Path::List includePaths( const KDevelop::Path& file )
 /**
  * Return a list of header files viable for inclusions. All elements will be unique
  */
-QStringList includeFiles(const QualifiedIdentifier& identifier, const QVector<Declaration*> declarations, const KDevelop::Path& file)
+QStringList includeFiles(const QualifiedIdentifier& identifier, const QVector<Declaration*>& declarations, const KDevelop::Path& file)
 {
     const auto includes = includePaths( file );
     if( includes.isEmpty() ) {
@@ -384,7 +399,7 @@ QStringList includeFiles(const QualifiedIdentifier& identifier, const QVector<De
         return {};
     }
 
-    const auto candidates = findMatchingIncludeFiles(declarations);
+    const auto candidates = UnknownDeclarationProblem::findMatchingIncludeFiles(declarations);
     if( !candidates.isEmpty() ) {
         // If we find a candidate from the duchain we don't bother scanning the include paths
         return candidates;
@@ -421,13 +436,13 @@ ClangFixits forwardDeclarations(const QVector<Declaration*>& matchingDeclaration
             case ClassDeclarationData::Class:
                 fixits += {
                     QLatin1String("class ") + name + QLatin1String(";\n"), range,
-                    QObject::tr("Forward declare as 'class'")
+                    i18n("Forward declare as 'class'")
                 };
                 break;
             case ClassDeclarationData::Struct:
                 fixits += {
                     QLatin1String("struct ") + name + QLatin1String(";\n"), range,
-                    QObject::tr("Forward declare as 'struct'")
+                    i18n("Forward declare as 'struct'")
                 };
                 break;
             default:
@@ -489,6 +504,7 @@ ClangFixits fixUnknownDeclaration( const QualifiedIdentifier& identifier, const 
     }
 
     const auto includepaths = includePaths( file );
+    clangDebug() << "found include paths for" << file << ":" << includepaths;
 
     /* create fixits for candidates */
     for( const auto& includeFile : includefiles ) {

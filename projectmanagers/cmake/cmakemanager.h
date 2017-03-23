@@ -30,19 +30,14 @@
 #include <project/interfaces/ibuildsystemmanager.h>
 #include <project/abstractfilemanagerplugin.h>
 #include <language/interfaces/ilanguagesupport.h>
-#include <language/codegen/applychangeswidget.h>
 #include <interfaces/iplugin.h>
-#include <interfaces/idocumentationprovider.h>
 
 #include "cmakeprojectdata.h"
 #include "icmakemanager.h"
-#include "cmakeprojectvisitor.h"
 
 class WaitAllJobs;
 class CMakeCommitChangesJob;
 struct CMakeProjectData;
-class QStandardItem;
-class QDir;
 class QObject;
 class CMakeHighlighting;
 class CMakeDocumentation;
@@ -138,20 +133,21 @@ public:
     int perProjectConfigPages() const override;
     KDevelop::ConfigPage* perProjectConfigPage(int number, const KDevelop::ProjectConfigOptions& options, QWidget* parent) override;
 
+    void integrateData(const CMakeProjectData &data, KDevelop::IProject* project);
+
 signals:
     void folderRenamed(const KDevelop::Path& oldFolder, KDevelop::ProjectFolderItem* newFolder);
     void fileRenamed(const KDevelop::Path& oldFile, KDevelop::ProjectFileItem* newFile);
 
 private slots:
-//     void dirtyFile(const QString& file);
-//
+    void serverResponse(KDevelop::IProject* project, const QJsonObject &value);
+
 //     void jumpToDeclaration();
     void projectClosing(KDevelop::IProject*);
     void dirtyFile(const QString& file);
 //
 //     void directoryChanged(const QString& dir);
 //     void filesystemBuffererTimeout();
-    void importFinished(KJob* job);
 
 private:
     CMakeFile fileInformation(KDevelop::ProjectBaseItem* item) const;

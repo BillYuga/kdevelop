@@ -25,7 +25,6 @@
 #include <cmakebuilderconfig.h>
 #include <cmakebuilder.h>
 
-#include <QtCore/QFile>
 #include <QtCore/QDir>
 
 #include <project/projectmodel.h>
@@ -33,7 +32,6 @@
 #include <interfaces/iproject.h>
 
 #include <kshell.h>
-#include <kjob.h>
 #include <klocalizedstring.h>
 
 #include "cmakeutils.h"
@@ -81,7 +79,7 @@ QUrl CMakeJob::workingDirectory() const
 QStringList CMakeJob::commandLine() const
 {
     QStringList args;
-    args << CMake::currentCMakeBinary( m_project ).toLocalFile();
+    args << CMake::currentCMakeExecutable(m_project).toLocalFile();
     args << "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON";
 
     QString installDir = CMake::currentInstallDir( m_project ).toLocalFile();
@@ -101,9 +99,9 @@ QStringList CMakeJob::commandLine() const
 
     //if we are creating a new build directory, we'll want to specify the generator
     QDir builddir(CMake::currentBuildDir( m_project ).toLocalFile());
-    if(!builddir.exists() || builddir.count()==2) {
+    if(!builddir.exists() || !builddir.exists("CMakeCache.txt")) {
         CMakeBuilderSettings::self()->load();
-        args << QString("-G") << CMakeBuilder::defaultGenerator();
+        args << QString("-G") << CMake::defaultGenerator();
     }
     QString cmakeargs = CMake::currentExtraArguments( m_project );
     if( !cmakeargs.isEmpty() ) {
